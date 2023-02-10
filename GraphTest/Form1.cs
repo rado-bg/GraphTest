@@ -248,9 +248,8 @@ namespace GraphTest
             myTimer.Stop();
             if (ifClickOpen == false)
             {
-                Draw(index, false);
+                Draw(index, false); //draw the point black
             }
-
             myTimer.Start();
             index = Values_lb.IndexFromPoint(e.Location);
             ifClickOpen = false;
