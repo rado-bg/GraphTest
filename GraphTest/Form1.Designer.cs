@@ -338,7 +338,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(949, 584);
+            this.ClientSize = new System.Drawing.Size(879, 584);
             this.Controls.Add(this.Values_lb);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label7);
@@ -368,7 +368,7 @@
             this.Controls.Add(this.CreateFile_btn);
             this.Controls.Add(this.OpenFile_btn);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Graph Test";
             this.ResumeLayout(false);
             this.PerformLayout();
 

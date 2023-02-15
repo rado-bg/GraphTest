@@ -191,6 +191,7 @@ namespace GraphTest
             Int16 Iteration;
             double num;
             string strValue;
+            status_txt.Text = "";
 
             try
             {
