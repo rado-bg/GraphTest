@@ -181,31 +181,110 @@ namespace GraphTest
             myTimer.Stop();
         }
 
+ 
+
+
+
         private void CreateFile_btn_Click(object sender, EventArgs e)
         {
+            lowLimit_txt.ForeColor = Color.Black;
+            highLimit_txt.ForeColor = Color.Black;
+            maxIteration_txt.ForeColor = Color.Black;
+
             Random RandomMeas = new Random(0);
 
-            double LowLimit;
-            double HighLimit;
+            double LowLimit = 0;
+            double HighLimit = 0;
             double valueLimit;
             Int16 Iteration;
             double num;
             string strValue;
             status_txt.Text = "";
 
+
             try
             {
                 LowLimit = Convert.ToDouble(lowLimit_txt.Text);
-                HighLimit = Convert.ToDouble(highLimit_txt.Text);
-                Iteration = Convert.ToInt16(maxIteration_txt.Text);
+                if (LowLimit < 0)
+                {
+                    status_txt.Text = status_txt.Text + "LowLimits must be positive!\r\n";
+                    ClearLabels();
+                    lowLimit_txt.ForeColor = Color.Red;
+                }
             }
             catch (Exception)
             {
-                status_txt.Text = "Incorrect format for LoLimits, HighLimits or Iteration!";
+                status_txt.Text = status_txt.Text + "Incorrect format for LowLimits!\r\n";
+                ClearLabels();
+                lowLimit_txt.ForeColor = Color.Red;
+                LowLimit = -1; 
+            }
+
+            try
+            {
+                HighLimit = Convert.ToDouble(highLimit_txt.Text);
+                if (HighLimit < 0)
+                {
+                    status_txt.Text = status_txt.Text + "HighLimits must be positive!\r\n";
+                    ClearLabels();
+                    highLimit_txt.ForeColor = Color.Red;
+                }
+            }
+            catch (Exception)
+            {
+                status_txt.Text = status_txt.Text + "Incorrect format for HighLimits!\r\n";
+                ClearLabels();
+                highLimit_txt.ForeColor = Color.Red;
+                HighLimit = -1;
+            }
+
+            try
+            {
+                Iteration = Convert.ToInt16(maxIteration_txt.Text);
+                if ((Iteration < 0) || (Iteration > 100))
+                {
+                    status_txt.Text = status_txt.Text + "\"Iteration must be between 0 and 100!\r\n";
+                    ClearLabels();
+                    maxIteration_txt.ForeColor = Color.Red;
+                    Iteration = -1;
+                }
+            }
+            catch (Exception)
+            {
+                status_txt.Text = status_txt.Text + "Incorrect format for HighLimits!\r\n";
+                ClearLabels();
+                maxIteration_txt.ForeColor = Color.Red;
+                Iteration = -1;
+            }
+
+            if (HighLimit < LowLimit + 0.01)
+            {
+                status_txt.Text = "HighLimit must be with at least 0.01 greater then LowLilit!\r\n";
                 ClearLabels();
                 return;
             }
 
+            if ((LowLimit < 0 ) || (HighLimit < 0) || (Iteration < 0))
+            {
+                return;
+            }
+
+
+
+            //try
+            //{
+            //    LowLimit = Convert.ToDouble(lowLimit_txt.Text);
+            //    HighLimit = Convert.ToDouble(highLimit_txt.Text);
+            //    
+            //}
+            //catch (Exception)
+            //{
+            //    status_txt.Text = "Incorrect format for LoLimits, HighLimits or Iteration!";
+            //    ClearLabels();
+            //    return;
+            //}
+            //HighLimit = Convert.ToDouble(highLimit_txt.Text);
+            Iteration = Convert.ToInt16(maxIteration_txt.Text);
             if (Iteration > 100)
             {
                 status_txt.Text = "Iteration must be between 0 and 100!";
@@ -213,12 +292,7 @@ namespace GraphTest
                 return;
             }
 
-            if (HighLimit < LowLimit)
-            {
-                status_txt.Text = "HighLimit must be greater then LowLilit!";
-                ClearLabels();
-                return;
-            }
+
 
             SaveFileDialog SaveFile = new SaveFileDialog();
             SaveFile.Filter = "txt files (*.txt)|*.txt";
