@@ -321,6 +321,7 @@
             // 
             // Values_lb
             // 
+            this.Values_lb.Enabled = false;
             this.Values_lb.FormattingEnabled = true;
             this.Values_lb.ItemHeight = 15;
             this.Values_lb.Location = new System.Drawing.Point(741, 56);

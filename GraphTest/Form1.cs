@@ -48,7 +48,9 @@ namespace GraphTest
         private void OpenFile_btn_Click(object sender, EventArgs e)
         {
             myTimer.Stop();
+            Values_lb.Enabled = true;
             ifClickOpen = true;
+            bool fileReadFlag = true;
 
             var fileContent = string.Empty;
             var filePath = string.Empty;
@@ -73,23 +75,44 @@ namespace GraphTest
                     string[] lines = fileContent.Split('\n');
 
                     foreach (string line in lines)
-                    {
-                        try
+                    {                     
+                        if (line != "")
                         {
-                            if (line != "")
+                            try
                             {
                                 values[counter] = Convert.ToDouble(line);
-                                counter++;
-                                Values_lb.Items.Add(String.Format("{0:D2}:  {1}", counter, line));
                             }
-                        }
+                            catch (Exception)
+                            {
+                                status_txt.Text = status_txt.Text + $"Incorrect Value convertion from file!  line: {counter + 1}\r\n[{line}]\r\n";
+                                fileReadFlag = false;
+                                break;                         
+                            }
 
-                        catch (Exception)
-                        {
-                            status_txt.Text = "Incorrect Value convertion from file!";
+                            if (values[counter] < 0)
+                            {
+                                status_txt.Text = status_txt.Text + $"Incorrect Value convertion from file!  line: {counter + 1}\r\n[{line}]  value must be positive\r\n";
+                                fileReadFlag = false;
+                                break;
+                            }
+
+                            Values_lb.Items.Add(String.Format("{0:D2}:  {1}", counter + 1, line));
+
+                            if (++counter > 99)
+                            {
+                                status_txt.Text = status_txt.Text + $"The file contains more than 100 reads and extra lines was skipped\r\n";
+                                break;
+                            }
                         }
                     }
                     valueSize = counter;
+                }
+
+                if (fileReadFlag ==  false)
+                {
+                    Values_lb.Items.Clear();
+                    Values_lb.Enabled = false;
+                    return;
                 }
 
                 Max = values.Select(x => x)
@@ -181,10 +204,6 @@ namespace GraphTest
             myTimer.Stop();
         }
 
- 
-
-
-
         private void CreateFile_btn_Click(object sender, EventArgs e)
         {
             lowLimit_txt.ForeColor = Color.Black;
@@ -202,6 +221,7 @@ namespace GraphTest
             status_txt.Text = "";
 
 
+            // User input date validation
             try
             {
                 LowLimit = Convert.ToDouble(lowLimit_txt.Text);
@@ -259,7 +279,7 @@ namespace GraphTest
 
             if (HighLimit < LowLimit + 0.01)
             {
-                status_txt.Text = "HighLimit must be with at least 0.01 greater then LowLilit!\r\n";
+                status_txt.Text = "HighLimit must be at least 0.01 greater then LowLilit!\r\n";
                 ClearLabels();
                 return;
             }
@@ -269,31 +289,7 @@ namespace GraphTest
                 return;
             }
 
-
-
-            //try
-            //{
-            //    LowLimit = Convert.ToDouble(lowLimit_txt.Text);
-            //    HighLimit = Convert.ToDouble(highLimit_txt.Text);
-            //    
-            //}
-            //catch (Exception)
-            //{
-            //    status_txt.Text = "Incorrect format for LoLimits, HighLimits or Iteration!";
-            //    ClearLabels();
-            //    return;
-            //}
-            //HighLimit = Convert.ToDouble(highLimit_txt.Text);
-            Iteration = Convert.ToInt16(maxIteration_txt.Text);
-            if (Iteration > 100)
-            {
-                status_txt.Text = "Iteration must be between 0 and 100!";
-                ClearLabels();
-                return;
-            }
-
-
-
+            // Create file
             SaveFileDialog SaveFile = new SaveFileDialog();
             SaveFile.Filter = "txt files (*.txt)|*.txt";
             SaveFile.Title = "Save an Image File";
@@ -318,6 +314,7 @@ namespace GraphTest
             }
         }
 
+        // choose value to blink
         private void Values_lb_MouseClick(object sender, MouseEventArgs e)
         {
             myTimer.Stop();
