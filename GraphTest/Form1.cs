@@ -37,106 +37,9 @@ namespace GraphTest
             labels[7] = l8;
             labels[8] = l9;
         }
-
-
-        private void myTimer_Tick(object sender, EventArgs e)
-        {
-            blink ^= true; // togle point color
-            Draw(index, blink);
-        }
-
-        private void OpenFile_btn_Click(object sender, EventArgs e)
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             myTimer.Stop();
-            Values_lb.Enabled = true;
-            ifClickOpen = true;
-            bool fileReadFlag = true;
-
-            var fileContent = string.Empty;
-            var filePath = string.Empty;
-            status_txt.Text = "";
-            Values_lb.Items.Clear();
-
-            int counter = 0;
-
-            OpenFile.Filter = "txt files (*.txt)|*.txt";
-            OpenFile.RestoreDirectory = true;
-
-            if (OpenFile.ShowDialog() == DialogResult.OK)
-            {
-                filePath = OpenFile.FileName;
-                var fileStream = OpenFile.OpenFile();
-
-                OpenFile_txt.Text = filePath;
-
-                using (StreamReader reader = new StreamReader(fileStream))
-                {
-                    fileContent = reader.ReadToEnd();
-                    string[] lines = fileContent.Split('\n');
-
-                    foreach (string line in lines)
-                    {                     
-                        if (line != "")
-                        {
-                            try
-                            {
-                                values[counter] = Convert.ToDouble(line);
-                            }
-                            catch (Exception)
-                            {
-                                status_txt.Text = status_txt.Text + $"Incorrect Value convertion from file!  line: {counter + 1}\r\n[{line}]\r\n";
-                                fileReadFlag = false;
-                                break;                         
-                            }
-
-                            if (values[counter] < 0)
-                            {
-                                status_txt.Text = status_txt.Text + $"Incorrect Value convertion from file!  line: {counter + 1}\r\n[{line}]  value must be positive\r\n";
-                                fileReadFlag = false;
-                                break;
-                            }
-
-                            Values_lb.Items.Add(String.Format("{0:D2}:  {1}", counter + 1, line));
-
-                            if (++counter > 99)
-                            {
-                                status_txt.Text = status_txt.Text + $"The file contains more than 100 reads and extra lines was skipped\r\n";
-                                break;
-                            }
-                        }
-                    }
-                    valueSize = counter;
-                }
-
-                if (fileReadFlag ==  false)
-                {
-                    Values_lb.Items.Clear();
-                    Values_lb.Enabled = false;
-                    return;
-                }
-
-                Max = values.Select(x => x)
-                      .Where(x => x > 0)
-                      .Max();
-
-                Min = values.Select(x => x)
-                                      .Where(x => x > 0)
-                                      .Min();
-
-                multiplier = (panel1.Height - 20) / (Max - Min); //calculate scale according to Max and Min values
-                Draw(index, false);
-
-                if (counter > 0)
-                {
-                    Draw(-1, true); //draw values as graphic
-                }
-                else
-                {
-                    ClearLabels();
-                    panel1.Controls.Clear(); //clear graphic panel
-                    this.Refresh();
-                }
-            }
         }
 
         void ClearLabels()
@@ -150,7 +53,6 @@ namespace GraphTest
         }
 
         void Draw(int index, Boolean blink)
-
         {
             int ellipseSize = 2;
 
@@ -199,9 +101,115 @@ namespace GraphTest
             }
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void myTimer_Tick(object sender, EventArgs e)
+        {
+            blink ^= true; // togle point color
+            Draw(index, blink);
+        }
+
+        private void OpenFile_btn_Click(object sender, EventArgs e)
         {
             myTimer.Stop();
+            Values_lb.Enabled = true;
+
+            ifClickOpen = true;
+            bool fileReadFlag = true;  // false if read wrong data from file
+
+            var fileContent = string.Empty; // keep whole file data
+            var filePath = string.Empty;    
+            status_txt.Text = "";
+            Values_lb.Items.Clear();
+
+            int counter = 0; // number of current row in file
+
+            OpenFile.Filter = "txt files (*.txt)|*.txt";
+            OpenFile.RestoreDirectory = true;
+
+            if (OpenFile.ShowDialog() == DialogResult.OK)
+            {
+                filePath = OpenFile.FileName;
+                var fileStream = OpenFile.OpenFile();
+
+                OpenFile_txt.Text = filePath;
+
+                using (StreamReader reader = new StreamReader(fileStream))
+                {
+                    fileContent = reader.ReadToEnd();
+                    string[] lines = fileContent.Split('\n'); //array of file lines
+
+                    foreach (string line in lines)
+                    {                     
+                        if (line != "")
+                        {
+                            try
+                            {
+                                values[counter] = Convert.ToDouble(line);
+                            }
+                            catch (Exception)
+                            {
+                                status_txt.Text = status_txt.Text + $"Incorrect Value convertion from file!  line: {counter + 1}\r\n[{line}]\r\n";
+                                fileReadFlag = false;
+                                break;                         
+                            }
+
+                            if ((values[counter] < 0) || (values[counter] >1000))
+                            {
+                                status_txt.Text = status_txt.Text + $"Incorrect Value convertion from file!  line: {counter + 1}\r\n[{line}]  value must be between 0 and 1000\r\n";
+                                fileReadFlag = false;
+                                break;
+                            }
+
+                            Values_lb.Items.Add(String.Format("{0:D2}:  {1}", counter + 1, line));
+
+                            if (++counter > 100)
+                            {
+                                status_txt.Text = status_txt.Text + $"File contains more than 100 reads and extra lines was skipped\r\n";
+                                break;
+                            }
+                        }
+                    }
+                    valueSize = counter;
+                }
+
+                if (counter == 0)
+                {
+                    status_txt.Text = status_txt.Text + $"File doesn't contain data\r\n";
+                    Values_lb.Enabled = true;
+                    fileReadFlag = false;
+                }
+
+                if (fileReadFlag ==  false)
+                {
+                    Values_lb.Items.Clear();
+                    Values_lb.Enabled = false;
+                    panel1.Controls.Clear(); //clear graphic panel
+                    this.Refresh();
+                    return;
+                }
+
+                Max = values.Select(x => x)
+                      .Where(x => x > 0)
+                      .Max();
+
+                Min = values.Select(x => x)
+                                      .Where(x => x > 0)
+                                      .Min();
+
+
+                multiplier = (panel1.Height - 20) / (Max - Min); //calculate scale according to Max and Min values
+                Draw(index, false); //overdraw selected value black after timer is stopped.
+
+                if (counter > 0)
+                {
+                    Draw(-1, true); //draw whole graphic and all values
+                }
+                else
+                {
+                    ClearLabels();
+                    panel1.Controls.Clear(); //clear graphic panel
+                    this.Refresh();
+                }
+            }
         }
 
         private void CreateFile_btn_Click(object sender, EventArgs e)
@@ -225,56 +233,58 @@ namespace GraphTest
             try
             {
                 LowLimit = Convert.ToDouble(lowLimit_txt.Text);
-                if (LowLimit < 0)
+                if ((LowLimit < 0) || (LowLimit >1000))
                 {
-                    status_txt.Text = status_txt.Text + "LowLimits must be positive!\r\n";
+                    status_txt.Text = status_txt.Text + "LowLimit must be between 0 and 1000!\r\n";
                     ClearLabels();
                     lowLimit_txt.ForeColor = Color.Red;
+                    return;
                 }
             }
             catch (Exception)
             {
-                status_txt.Text = status_txt.Text + "Incorrect format for LowLimits!\r\n";
+                status_txt.Text = status_txt.Text + "Incorrect format for LowLimit!\r\n";
                 ClearLabels();
                 lowLimit_txt.ForeColor = Color.Red;
-                LowLimit = -1; 
+                return;
             }
 
             try
             {
                 HighLimit = Convert.ToDouble(highLimit_txt.Text);
-                if (HighLimit < 0)
+                if ((HighLimit < 0) || (HighLimit > 1000))
                 {
-                    status_txt.Text = status_txt.Text + "HighLimits must be positive!\r\n";
+                    status_txt.Text = status_txt.Text + "HighLimit must be between 0 and 1000!\r\n";
                     ClearLabels();
                     highLimit_txt.ForeColor = Color.Red;
+                    return;
                 }
             }
             catch (Exception)
             {
-                status_txt.Text = status_txt.Text + "Incorrect format for HighLimits!\r\n";
+                status_txt.Text = status_txt.Text + "Incorrect format for HighLimit!\r\n";
                 ClearLabels();
                 highLimit_txt.ForeColor = Color.Red;
-                HighLimit = -1;
+                return;
             }
 
             try
             {
                 Iteration = Convert.ToInt16(maxIteration_txt.Text);
-                if ((Iteration < 0) || (Iteration > 100))
+                if ((Iteration < 1) || (Iteration > 100))
                 {
-                    status_txt.Text = status_txt.Text + "\"Iteration must be between 0 and 100!\r\n";
+                    status_txt.Text = status_txt.Text + "\"Iteration must be between 1 and 100!\r\n";
                     ClearLabels();
                     maxIteration_txt.ForeColor = Color.Red;
-                    Iteration = -1;
+                    return;
                 }
             }
             catch (Exception)
             {
-                status_txt.Text = status_txt.Text + "Incorrect format for HighLimits!\r\n";
+                status_txt.Text = status_txt.Text + "Incorrect format for Iteration!\r\n";
                 ClearLabels();
                 maxIteration_txt.ForeColor = Color.Red;
-                Iteration = -1;
+                return;
             }
 
             if (HighLimit < LowLimit + 0.01)
@@ -284,10 +294,6 @@ namespace GraphTest
                 return;
             }
 
-            if ((LowLimit < 0 ) || (HighLimit < 0) || (Iteration < 0))
-            {
-                return;
-            }
 
             // Create file
             SaveFileDialog SaveFile = new SaveFileDialog();
